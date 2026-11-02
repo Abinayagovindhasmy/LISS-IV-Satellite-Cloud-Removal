@@ -1,0 +1,24 @@
+{
+    "model_id": "synthetic_liss4_unet",
+    "name": "Generative AI LISS-IV Cloud Removal UNet",
+    "version": "2.0",
+    "training_date": "2026-10-05",
+    "epochs": 15,
+    "final_psnr_db": 32.39,
+    "final_ssim": 0.9515,
+    "band_order": [
+        "Green",
+        "Red",
+        "NIR",
+        "SWIR"
+    ],
+    "input_channels": [
+        "Green",
+        "Red",
+        "NIR",
+        "SWIR",
+        "cloud_mask"
+    ],
+    "patch_size": 512,
+    "overlap": 64
+}

@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triton-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: triton-server
+  template:
+    metadata:
+      labels:
+        app: triton-server
+    spec:
+      containers:
+        - name: triton-server
+          image: nvcr.io/nvidia/tritonserver:23.08-py3
+          args: ["tritonserver", "--model-repository=/models"]
+          ports:
+            - containerPort: 8000
+              name: http
+            - containerPort: 8001
+              name: grpc
+            - containerPort: 8002
+              name: metrics
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+              memory: "8Gi"
+              cpu: "4"
+            requests:
+              memory: "4Gi"
+              cpu: "2"
+          volumeMounts:
+            - name: model-repository
+              mountPath: /models
+      volumes:
+        - name: model-repository
+          persistentVolumeClaim:
+            claimName: triton-model-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton-server
+spec:
+  ports:
+    - port: 8000
+      name: http
+    - port: 8001
+      name: grpc
+    - port: 8002
+      name: metrics
+  selector:
+    app: triton-server
+---
+# Sample Triton Model Config Template (Triton Model Repository Configuration)
+# File structure: /models/liss4_unet/config.pbtxt
+# 
+# name: "liss4_unet"
+# platform: "pytorch_libtorch"
+# max_batch_size: 8
+# input [
+#   {
+#     name: "input__0"
+#     data_type: TYPE_FP32
+#     dims: [ 5, -1, -1 ]
+#   }
+# ]
+# output [
+#   {
+#     name: "output__0"
+#     data_type: TYPE_FP32
+#     dims: [ 4, -1, -1 ]
+#   }
+# ]
+# instance_group [
+#   {
+#     count: 1
+#     kind: KIND_GPU
+#   }
+# ]
